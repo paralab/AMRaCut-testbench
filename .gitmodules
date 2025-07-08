@@ -1,0 +1,6 @@
+[submodule "AMRaCut"]
+	path = AMRaCut
+	url = git@github.com:paralab/AMRaCut.git
+[submodule "gmsh"]
+	path = gmsh
+	url = https://gitlab.onelab.info/gmsh/gmsh.git
