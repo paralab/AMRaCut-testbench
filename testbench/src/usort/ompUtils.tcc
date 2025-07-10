@@ -3,6 +3,7 @@
 #include <iterator>
 #include <vector>
 #include <algorithm>
+#include <string.h>
 // #include <seqUtils.h>
 
 
