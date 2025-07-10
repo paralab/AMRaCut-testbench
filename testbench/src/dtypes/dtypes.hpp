@@ -80,7 +80,6 @@ namespace amracut_testbench
 
   struct ElementFace
   {
-    uint64_t element_tag;
     uint64_t global_idx;
     uint64_t face_tag;
     bool operator==(const ElementFace &other) const
@@ -218,6 +217,71 @@ namespace par
         offsets[3] = offsetof(amracut_testbench::Element, z);
 
         MPI_Type_create_struct(4, block_lengths, offsets, types, &custom_mpi_type);
+        MPI_Type_commit(&custom_mpi_type);
+      }
+
+      return custom_mpi_type;
+    }
+  };
+
+  template <>
+  class Mpi_datatype<amracut_testbench::ElementFace>
+  {
+
+  /**
+  @return the MPI_Datatype for the C++ datatype "ElementFace"
+  **/
+  public:
+    static MPI_Datatype value()
+    {
+      static bool first = true;
+      static MPI_Datatype custom_mpi_type;
+
+      if (first)
+      {
+        first = false;
+        int block_lengths[2] = {1, 1};
+        MPI_Datatype types[2] = {MPI_UINT64_T, MPI_UINT64_T};
+        MPI_Aint offsets[2];
+        offsets[0] = offsetof(amracut_testbench::ElementFace, global_idx);
+        offsets[1] = offsetof(amracut_testbench::ElementFace, face_tag);
+
+        MPI_Type_create_struct(2, block_lengths, offsets, types, &custom_mpi_type);
+        MPI_Type_commit(&custom_mpi_type);
+      }
+
+      return custom_mpi_type;
+    }
+  };
+
+  template <>
+  class Mpi_pairtype<uint64_t, uint64_t>
+  {
+
+  /**
+  @return the MPI_Datatype for the C++ datatype "std::pair<uint64_t,uint64_t>"
+  **/
+  public:
+    static MPI_Datatype value()
+    {
+      static bool first = true;
+      static MPI_Datatype custom_mpi_type;
+
+      if (first)
+      {
+
+        first = false;
+        MPI_Datatype inner_type = MPI_UINT64_T;
+
+        int second_value_offset;
+        MPI_Type_size(inner_type, &second_value_offset);
+        int block_lengths[2] = {1, 1};
+        MPI_Datatype types[2] = {inner_type, inner_type};
+        MPI_Aint offsets[2];
+        offsets[0] = 0;
+        offsets[1] = static_cast<MPI_Aint>(second_value_offset);
+
+        MPI_Type_create_struct(2, block_lengths, offsets, types, &custom_mpi_type);
         MPI_Type_commit(&custom_mpi_type);
       }
 

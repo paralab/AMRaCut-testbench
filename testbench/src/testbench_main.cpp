@@ -67,6 +67,12 @@ int main(int argc, char *argv[])
   std::vector<amracut_testbench::Element> global_elements;
 
 
+  std::vector<std::pair<uint64_t, uint64_t>> local_connected_element_pairs;
+  std::vector<std::pair<uint64_t, uint64_t>> boundary_connected_element_pairs;
+
+  std::vector<amracut_testbench::ElementFace> local_unconnected_elements_faces;
+
+
   int local_element_count;
   int global_element_count;
 
@@ -122,8 +128,8 @@ int main(int argc, char *argv[])
       local_sfc_elements[local_elem_i].y = local_sfc_elements_tet[local_elem_i].y;
       local_sfc_elements[local_elem_i].z = local_sfc_elements_tet[local_elem_i].z;
     }
-    // ResolveElementConnectivityByNodes(localElementsAllData_Tet,ElementType::TET,proc_element_counts,proc_element_counts_scanned,local_connected_element_pairs,boundary_connected_element_pairs, comm);
-    // ResolveLocalElementConnectivity(localElementsAllData_Tet, ElementType::TET, local_connected_element_pairs, local_unconnected_elements_faces);
+    amracut_testbench::ResolveLocalElementConnectivity(local_sfc_elements_tet, amracut_testbench::ElementType::TET, 
+                                                       local_connected_element_pairs, local_unconnected_elements_faces);
     break;
   }
   case amracut_testbench::ElementType::HEX:
@@ -138,8 +144,8 @@ int main(int argc, char *argv[])
       local_sfc_elements[local_elem_i].y = local_sfc_elements_hex[local_elem_i].y;
       local_sfc_elements[local_elem_i].z = local_sfc_elements_hex[local_elem_i].z;
     }
-    // ResolveElementConnectivityByNodes(localElementsAllData_Hex,ElementType::HEX,proc_element_counts,proc_element_counts_scanned,local_connected_element_pairs,boundary_connected_element_pairs, comm);
-    // ResolveLocalElementConnectivity(localElementsAllData_Hex, ElementType::HEX, local_connected_element_pairs, local_unconnected_elements_faces);
+    amracut_testbench::ResolveLocalElementConnectivity(local_sfc_elements_hex, amracut_testbench::ElementType::HEX, 
+                                                       local_connected_element_pairs, local_unconnected_elements_faces);
     break;
   }
 
@@ -149,6 +155,18 @@ int main(int argc, char *argv[])
     break;
   }
   }
+
+
+
+  amracut_testbench::ResolveBoundaryElementConnectivity(local_unconnected_elements_faces,
+                                                        proc_element_counts, proc_element_counts_scanned, 
+                                                        boundary_connected_element_pairs, comm);
+
+
+
+
+
+
 
   std::vector<uint64_t> local_sfc_partition_labels(local_element_count, my_rank);
 
