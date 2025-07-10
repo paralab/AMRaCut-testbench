@@ -105,6 +105,20 @@ namespace amracut_testbench
     }
   };
 
+  struct Element
+  {
+    uint64_t global_idx;
+    double x;
+    double y;
+    double z;
+  };
+
+  struct PartitionStatus
+  {
+    int return_code;
+    uint64_t time_us;
+  };
+
 } // namespace amracut_testbench
 
 namespace par
@@ -172,6 +186,38 @@ namespace par
         offsets[6] = offsetof(amracut_testbench::HexElement, face_tags);
 
         MPI_Type_create_struct(7, block_lengths, offsets, types, &custom_mpi_type);
+        MPI_Type_commit(&custom_mpi_type);
+      }
+
+      return custom_mpi_type;
+    }
+  };
+
+  template <>
+  class Mpi_datatype<amracut_testbench::Element>
+  {
+
+  /**
+  @return the MPI_Datatype for the C++ datatype "Element"
+  **/
+  public:
+    static MPI_Datatype value()
+    {
+      static bool first = true;
+      static MPI_Datatype custom_mpi_type;
+
+      if (first)
+      {
+        first = false;
+        int block_lengths[4] = {1, 1, 1, 1};
+        MPI_Datatype types[4] = {MPI_UINT64_T, MPI_DOUBLE, MPI_DOUBLE, MPI_DOUBLE};
+        MPI_Aint offsets[4];
+        offsets[0] = offsetof(amracut_testbench::Element, global_idx);
+        offsets[1] = offsetof(amracut_testbench::Element, x);
+        offsets[2] = offsetof(amracut_testbench::Element, y);
+        offsets[3] = offsetof(amracut_testbench::Element, z);
+
+        MPI_Type_create_struct(4, block_lengths, offsets, types, &custom_mpi_type);
         MPI_Type_commit(&custom_mpi_type);
       }
 

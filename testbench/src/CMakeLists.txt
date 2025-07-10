@@ -1,7 +1,10 @@
 add_subdirectory(dgraph)
 add_subdirectory(dtypes)
 add_subdirectory(mesh_utils)
-add_subdirectory(utils)
+add_subdirectory(sfc)
 add_subdirectory(usort)
+add_subdirectory(utils)
 
-
+if(ENABLE_VTK_FEATURES)
+    add_subdirectory(vtk_utils)
+endif()

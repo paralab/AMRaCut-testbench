@@ -20,6 +20,14 @@ namespace amracut_testbench
     std::cout << oss.str() << std::endl;
   }
 
+  
+  //Wrapper function on `print_log` that prepends [MPI_rank] to the print output
+  template <typename... Args>
+  void print_log_mpi(const int mpi_rank, const Args&... args)
+  {
+    print_log("[", mpi_rank, "]", args...);
+  }
+
   template <typename T, typename U>
   std::ostream &operator<<(std::ostream &os, const std::pair<T, U> &p)
   {

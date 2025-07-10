@@ -60,3 +60,23 @@ target_link_libraries(${MAIN_TARGET_NAME} PRIVATE
     ${GMSH_LIBRARY}
     MPI::MPI_CXX
 )
+
+
+if(ENABLE_VTK_FEATURES)
+    message("VTK features enabled")
+    add_compile_definitions(ENABLE_VTK_FEATURES=1)
+    set(VTK_DIR "/home/budvin/bin/VTK-9.3.0/build")
+
+    find_package(
+        VTK REQUIRED 
+        COMPONENTS
+            CommonCore
+            CommonDataModel
+            IOXML
+            FiltersCore
+    )
+    include(${VTK_USE_FILE})
+
+    target_link_libraries(${MAIN_TARGET_NAME} PRIVATE ${VTK_LIBRARIES})
+
+endif()

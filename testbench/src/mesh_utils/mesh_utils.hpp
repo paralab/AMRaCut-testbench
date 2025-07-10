@@ -12,6 +12,6 @@ namespace amracut_testbench
                                       ElementType element_type, MPI_Comm comm);
 } // namespace amracut_testbench
 
-#include "mesh_utils.tcc"
+#include "mesh_utils/mesh_utils.tcc"
 
 #endif
