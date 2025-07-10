@@ -319,7 +319,7 @@ namespace amracut_testbench
 
     if (!my_rank)
     {
-      print_log("AMRaCut total time:\t\t\t", duration__.count(), " us");
+      print_log("AMRaCut total time:\t", duration__.count(), " us");
     }
     partition_labels_out.assign(partitions_labels.begin(), partitions_labels.end());
     return {.return_code = 0, .time_us = static_cast<uint64_t>(duration__.count())};

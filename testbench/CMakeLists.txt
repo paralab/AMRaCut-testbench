@@ -63,20 +63,26 @@ target_link_libraries(${MAIN_TARGET_NAME} PRIVATE
 
 
 if(ENABLE_VTK_FEATURES)
+    if(NOT VTK_INSTALL_DIR_PATH)
+        message(FATAL_ERROR "The VTK_INSTALL_DIR_PATH is required when ENABLE_VTK_FEATURES is on")
+    endif()
     message("VTK features enabled")
     add_compile_definitions(ENABLE_VTK_FEATURES=1)
-    set(VTK_DIR "/home/budvin/bin/VTK-9.3.0/build")
+    set(VTK_DIR "${VTK_INSTALL_DIR_PATH}")
 
     find_package(
-        VTK REQUIRED 
+        VTK REQUIRED
         COMPONENTS
             CommonCore
             CommonDataModel
             IOXML
-            FiltersCore
     )
-    include(${VTK_USE_FILE})
 
     target_link_libraries(${MAIN_TARGET_NAME} PRIVATE ${VTK_LIBRARIES})
+
+    vtk_module_autoinit(
+        TARGETS ${MAIN_TARGET_NAME}
+        MODULES ${VTK_LIBRARIES}
+      )
 
 endif()

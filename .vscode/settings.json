@@ -78,5 +78,6 @@
     "cmake.sourceDirectory": "/home/budvin/research/Partitioning/AMRaCut-testbench/testbench",
     "cmake.configureSettings": {
         "ENABLE_VTK_FEATURES": "ON",
+        "VTK_INSTALL_DIR_PATH": "/home/budvin/bin/VTK-9.3.0/build"
     }
 }

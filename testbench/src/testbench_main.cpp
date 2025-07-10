@@ -117,6 +117,11 @@ int main(int argc, char *argv[])
   local_sfc_elements.resize(local_element_count);
   uint64_t global_idx_start = static_cast<uint64_t>(proc_element_counts_scanned[my_rank]);
 
+  if (!my_rank)
+  {
+    amracut_testbench::print_log("starting elemenet connectivity");
+  }
+
   switch (element_type)
   {
   case amracut_testbench::ElementType::TET:
@@ -164,12 +169,25 @@ int main(int argc, char *argv[])
                                                         proc_element_counts, proc_element_counts_scanned, 
                                                         boundary_connected_element_pairs, comm);
 
+  if (!my_rank)
+  {
+    amracut_testbench::print_log("elemenet connectivity done");
+    amracut_testbench::print_log("starting graph creation");
+  }
 
   amracut_testbench::DGraph dist_graph(local_connected_element_pairs, boundary_connected_element_pairs,
                                        proc_element_counts, proc_element_counts_scanned ,DIST_GRAPH_UNWEIGHTED , comm);
+  if (!my_rank)
+  {
+    amracut_testbench::print_log("graph created");
+  }
 
   std::vector<uint64_t> local_amracut_partition_labels(local_element_count);
 
+  if (!my_rank)
+  {
+    amracut_testbench::print_log("starting AMRaCut partitioning");
+  }
   dist_graph.PartitionAMRaCut(local_amracut_partition_labels, true);
 
 
@@ -183,6 +201,7 @@ int main(int argc, char *argv[])
 
   if (!my_rank)
   {
+    amracut_testbench::print_log("starting VTK export");
     global_sfc_partition_labels.resize(global_element_count);
     global_amracut_partition_labels.resize(global_element_count);
     global_sfc_elements.resize(global_element_count);
@@ -205,6 +224,8 @@ int main(int argc, char *argv[])
     amracut_testbench::export_parititions_to_vtk(global_sfc_elements, 
                                                  global_sfc_partition_labels, global_amracut_partition_labels, 
                                                  "partitions");
+    amracut_testbench::print_log("VTK export done");
+                                                     
   }
   
 
