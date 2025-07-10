@@ -47,12 +47,14 @@ int main(int argc, char *argv[])
 
 
 
-  if (argc < 2)
+  if (argc < 3)
   {
-    std::cerr << "Usage: " << argv[0] << " <mesh file path>" << std::endl;
+    std::cerr << "Usage: " << argv[0] << " <mesh file path> <metrics output json path>" << std::endl;
     return 1;
   }
   const std::string mesh_file_path = argv[1];
+  const std::string output_file_path = argv[2];
+
 
   if (!my_rank)
   {
@@ -188,12 +190,36 @@ int main(int argc, char *argv[])
   {
     amracut_testbench::print_log("starting AMRaCut partitioning");
   }
-  dist_graph.PartitionAMRaCut(local_amracut_partition_labels, true);
+  amracut_testbench::PartitionStatus amracut_status = dist_graph.PartitionAMRaCut(local_amracut_partition_labels, true);
 
 
   std::vector<uint64_t> local_sfc_partition_labels(local_element_count, my_rank);
 
-  #ifdef ENABLE_VTK_FEATURES
+  // collecting partitioning metrics (Only valid on MPI rank 0)
+
+  std::vector<uint64_t> global_amracut_partition_sizes;
+  std::vector<uint64_t> global_amracut_partition_boundaries;
+  std::vector<uint64_t> global_amracut_partition_cuts;
+
+  dist_graph.GetPartitionMetrics(local_amracut_partition_labels, global_amracut_partition_sizes,
+                                 global_amracut_partition_boundaries, global_amracut_partition_cuts);
+
+  std::vector<uint64_t> global_sfc_partition_sizes;
+  std::vector<uint64_t> global_sfc_partition_boundaries;
+  std::vector<uint64_t> global_sfc_partition_cuts;
+
+  dist_graph.GetPartitionMetrics(local_sfc_partition_labels, global_sfc_partition_sizes,
+                                 global_sfc_partition_boundaries, global_sfc_partition_cuts);
+
+  if(!my_rank)
+  {
+    amracut_testbench::ExportMetricsToJson(mesh_file_path, procs_n, global_element_count, 
+                                           SFC_status.time_us, global_sfc_partition_sizes, global_sfc_partition_boundaries, global_sfc_partition_cuts,
+                                           amracut_status.time_us, global_amracut_partition_sizes, global_amracut_partition_boundaries, global_amracut_partition_cuts,
+                                           output_file_path);
+  }
+
+#ifdef ENABLE_VTK_FEATURES
   std::vector<amracut_testbench::Element> global_sfc_elements;
   std::vector<uint64_t> global_sfc_partition_labels;
   std::vector<uint64_t> global_amracut_partition_labels;

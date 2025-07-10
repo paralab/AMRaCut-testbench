@@ -11,6 +11,8 @@
 #include "dtypes/dtypes.hpp"
 #include "dgraph/dgraph.hpp"
 #include "usort/ompUtils.h"
+#include "usort/parUtils.h"
+
 
 
 namespace amracut_testbench
@@ -323,6 +325,97 @@ namespace amracut_testbench
     }
     partition_labels_out.assign(partitions_labels.begin(), partitions_labels.end());
     return {.return_code = 0, .time_us = static_cast<uint64_t>(duration__.count())};
+  }
+
+  /**
+   * given a partition labelling, get global partition sizes and boundary sizes
+   * result will be present in partition_sizes_out and partition_boundaries_out, only in MPI rank 0 process.
+   */
+  void DGraph::GetPartitionMetrics(std::vector<uint64_t> &local_partition_labels,
+                                      std::vector<uint64_t> &partition_sizes_out,
+                                      std::vector<uint64_t> &partition_boundaries_out,
+                                      std::vector<uint64_t> &partition_cuts_out)
+  {
+    int procs_n, my_rank;
+    MPI_Comm_size(this->comm, &procs_n);
+    MPI_Comm_rank(this->comm, &my_rank);
+    assert(local_partition_labels.size() == this->local_count);
+
+    std::vector<uint64_t> local_partition_sizes(procs_n, 0);
+    for (size_t local_i = 0; local_i < this->local_count; local_i++)
+    {
+      // uint32_t w = (this->wgt_flag == DIST_GRAPH_VTX_WEIGHTED || this->wgt_flag == DIST_GRAPH_VTX_EDGE_WEIGHTED) ? this->local_vertex_wgts[local_i] : 1;
+      local_partition_sizes[local_partition_labels[local_i]]++;
+    }
+
+    /**
+     * exchanging partition labels of ghost vertices to calculate partition boundary counts
+     */
+    std::vector<uint64_t> local_and_ghost_partition_labels(this->local_count + this->ghost_count);
+    std::copy(local_partition_labels.begin(), local_partition_labels.end(), local_and_ghost_partition_labels.begin());
+
+    if (procs_n > 1)
+    {
+      std::vector<uint64_t> ghost_send_buffer(this->send_count);
+
+      for (size_t send_i = 0; send_i < this->send_count; send_i++)
+      {
+        ghost_send_buffer[send_i] = local_and_ghost_partition_labels[this->sending_scatter_map[send_i]];
+      }
+      MPI_Barrier(this->comm);
+      par::Mpi_Alltoallv_sparse(ghost_send_buffer.data(), this->send_counts.data(), this->send_counts_scanned.data(),
+                                &local_and_ghost_partition_labels[this->local_count], this->ghost_counts.data(),
+                                this->ghost_counts_scanned.data(), this->comm);
+
+      MPI_Barrier(this->comm);
+    }
+
+    // now calculating partition boundaries
+    std::vector<uint64_t> local_partition_boundaries(procs_n, 0);
+    std::vector<uint64_t> local_partition_cuts(procs_n, 0);
+
+    for (uint64_t local_vertex = 0; local_vertex < this->local_count; local_vertex++)
+    {
+
+      bool is_bdry_vertex = false;
+
+      for (uint64_t neighbor_i = this->local_xdj[local_vertex]; neighbor_i < this->local_xdj[local_vertex + 1];
+           neighbor_i++)
+      {
+        auto neighbor = local_adjncy[neighbor_i];
+        // auto edge_w = (this->wgt_flag == DIST_GRAPH_EDGE_WEIGHTED || this->wgt_flag == DIST_GRAPH_VTX_EDGE_WEIGHTED) ? this->dist_adjwgt[neighbor_i] : 1;
+        if (local_and_ghost_partition_labels[local_vertex] != local_and_ghost_partition_labels[neighbor])
+        {
+          is_bdry_vertex = true;
+          local_partition_cuts[local_and_ghost_partition_labels[local_vertex]]++;
+        }
+      }
+      if (is_bdry_vertex)
+      {
+        // uint32_t w = (this->wgt_flag == DIST_GRAPH_VTX_WEIGHTED || this->wgt_flag == DIST_GRAPH_VTX_EDGE_WEIGHTED) ? this->local_vertex_wgts[local_vertex] : 1;
+        local_partition_boundaries[local_and_ghost_partition_labels[local_vertex]]++;
+      }
+    }
+
+    // collect results to 0 MPI proc
+
+    if (!my_rank)
+    {
+      partition_sizes_out.resize(procs_n);
+      std::fill(partition_sizes_out.begin(), partition_sizes_out.end(), 0);
+      partition_boundaries_out.resize(procs_n);
+      std::fill(partition_boundaries_out.begin(), partition_boundaries_out.end(), 0);
+      partition_cuts_out.resize(procs_n);
+      std::fill(partition_cuts_out.begin(), partition_cuts_out.end(), 0);
+    }
+
+    MPI_Reduce(local_partition_sizes.data(), partition_sizes_out.data(), procs_n, MPI_UINT64_T, MPI_SUM, 0, this->comm);
+    MPI_Barrier(this->comm);
+    MPI_Reduce(local_partition_boundaries.data(), partition_boundaries_out.data(), procs_n, MPI_UINT64_T, MPI_SUM, 0,
+               this->comm);
+    MPI_Barrier(this->comm);
+    MPI_Reduce(local_partition_cuts.data(), partition_cuts_out.data(), procs_n, MPI_UINT64_T, MPI_SUM, 0,
+               this->comm);
   }
 
 } // namespace amracut_testbench

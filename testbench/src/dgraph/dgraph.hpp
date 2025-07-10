@@ -53,8 +53,10 @@ namespace amracut_testbench
     // ~DGraph();
     PartitionStatus PartitionAMRaCut(std::vector<uint64_t> &partition_labels_out, bool use_diffusion);
 
-    // void GetPartitionMetrics(std::vector<uint64_t> &local_partition_labels, std::vector<uint64_t> &partition_sizes_out,
-    //                          std::vector<uint64_t> &partition_boundaries_out, std::vector<uint64_t> &partition_cuts_out);
+    void GetPartitionMetrics(std::vector<uint64_t> &local_partition_labels,
+                             std::vector<uint64_t> &partition_sizes_out,
+                             std::vector<uint64_t> &partition_boundaries_out,
+                             std::vector<uint64_t> &partition_cuts_out);
 
   }; // class DGraph
 

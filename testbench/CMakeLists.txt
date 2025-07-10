@@ -32,6 +32,9 @@ add_subdirectory(src)
 
 include_directories(src)
 
+include_directories(ext)
+
+
 
 set(DEPS_INSTALL_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../install")
 

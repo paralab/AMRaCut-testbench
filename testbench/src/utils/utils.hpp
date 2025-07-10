@@ -5,7 +5,6 @@
 #include <sstream>
 #include <vector>
 
-
 namespace amracut_testbench
 {
   // Variadic template function to mimic std::cout with spaces between arguments
@@ -20,10 +19,9 @@ namespace amracut_testbench
     std::cout << oss.str() << std::endl;
   }
 
-  
-  //Wrapper function on `print_log` that prepends [MPI_rank] to the print output
+  // Wrapper function on `print_log` that prepends [MPI_rank] to the print output
   template <typename... Args>
-  void print_log_mpi(const int mpi_rank, const Args&... args)
+  void print_log_mpi(const int mpi_rank, const Args &...args)
   {
     print_log("[", mpi_rank, "]", args...);
   }
@@ -50,10 +48,19 @@ namespace amracut_testbench
 
   /*
    * Template specialization for uint8_t chars
-  */
+   */
   template <>
   std::string VectorToString(std::vector<uint8_t> vec);
-} // namespace amracut_testbench
 
+  void ExportMetricsToJson(
+      std::string mesh_file,
+      int partition_count, uint64_t global_vertex_count,
+      uint64_t sfc_partition_time,
+      std::vector<uint64_t> &sfc_partition_sizes, std::vector<uint64_t> &sfc_partition_boundaries, std::vector<uint64_t> &sfc_partition_cuts,
+      uint64_t amracut_partition_time,
+      std::vector<uint64_t> &amracut_partition_sizes, std::vector<uint64_t> &amracut_partition_boundaries, std::vector<uint64_t> &amracut_partition_cuts,
+      std::string metrics_out_file_path);
+
+} // namespace amracut_testbench
 
 #endif
