@@ -11,6 +11,8 @@
 #include "usort/parUtils.h"
 #include "usort/ompUtils.h"
 #include "sfc/sfc.hpp"
+#include "dgraph/dgraph.hpp"
+
 
 #ifdef ENABLE_VTK_FEATURES
 #include "vtk_utils/vtk_utils.hpp"
@@ -163,9 +165,12 @@ int main(int argc, char *argv[])
                                                         boundary_connected_element_pairs, comm);
 
 
+  amracut_testbench::DGraph dist_graph(local_connected_element_pairs, boundary_connected_element_pairs,
+                                       proc_element_counts, proc_element_counts_scanned ,DIST_GRAPH_UNWEIGHTED , comm);
 
+  std::vector<uint64_t> local_amracut_partition_labels(local_element_count);
 
-
+  dist_graph.PartitionAMRaCut(local_amracut_partition_labels, true);
 
 
   std::vector<uint64_t> local_sfc_partition_labels(local_element_count, my_rank);
@@ -173,10 +178,13 @@ int main(int argc, char *argv[])
   #ifdef ENABLE_VTK_FEATURES
   std::vector<amracut_testbench::Element> global_sfc_elements;
   std::vector<uint64_t> global_sfc_partition_labels;
+  std::vector<uint64_t> global_amracut_partition_labels;
+
 
   if (!my_rank)
   {
     global_sfc_partition_labels.resize(global_element_count);
+    global_amracut_partition_labels.resize(global_element_count);
     global_sfc_elements.resize(global_element_count);
   }
 
@@ -187,18 +195,22 @@ int main(int argc, char *argv[])
   MPI_Gatherv(local_sfc_partition_labels.data(), local_element_count, MPI_UINT64_T, global_sfc_partition_labels.data(),
               proc_element_counts.data(),proc_element_counts_scanned.data(),MPI_UINT64_T, 0, comm);
 
+  MPI_Barrier(comm);
+  
+  MPI_Gatherv(local_amracut_partition_labels.data(), local_element_count, MPI_UINT64_T, global_amracut_partition_labels.data(),
+              proc_element_counts.data(),proc_element_counts_scanned.data(),MPI_UINT64_T, 0, comm);
+
   if (!my_rank)
   {
-    amracut_testbench::export_parititions_to_vtk(global_sfc_elements, global_sfc_partition_labels, "partitions");
+    amracut_testbench::export_parititions_to_vtk(global_sfc_elements, 
+                                                 global_sfc_partition_labels, global_amracut_partition_labels, 
+                                                 "partitions");
   }
   
 
   #endif
 
-
   MPI_Finalize();
-
-
 
   return 0;
 }

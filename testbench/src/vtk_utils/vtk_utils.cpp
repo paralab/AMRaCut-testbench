@@ -20,12 +20,11 @@ namespace amracut_testbench
   void export_parititions_to_vtk(
       const std::vector<amracut_testbench::Element> &elements,
       const std::vector<uint64_t> &sfc_partition_labels,
-      // const std::vector<uint64_t> &p2,
-      // const std::vector<uint64_t> &p3,
+      const std::vector<uint64_t> &amracut_partition_labels,
       const std::string output_filename)
   {
     size_t n = elements.size();
-    if (sfc_partition_labels.size() != n /*|| p2.size() != n || p3.size() != n*/)
+    if (sfc_partition_labels.size() != n || amracut_partition_labels.size() != n)
     {
       throw std::runtime_error("Element and partition label vector size mismatch");
     }
@@ -49,26 +48,19 @@ namespace amracut_testbench
     array_sfc->SetNumberOfComponents(1);
     array_sfc->SetNumberOfTuples(n);
 
-    // auto array_p2 = vtkSmartPointer<vtkDoubleArray>::New();
-    // array_p2->SetName("p2");
-    // array_p2->SetNumberOfComponents(1);
-    // array_p2->SetNumberOfTuples(n);
-
-    // auto array_p3 = vtkSmartPointer<vtkDoubleArray>::New();
-    // array_p3->SetName("p3");
-    // array_p3->SetNumberOfComponents(1);
-    // array_p3->SetNumberOfTuples(n);
+    auto array_amracut = vtkSmartPointer<vtkDoubleArray>::New();
+    array_amracut->SetName("AMRaCut");
+    array_amracut->SetNumberOfComponents(1);
+    array_amracut->SetNumberOfTuples(n);
 
     for (vtkIdType i = 0; i < static_cast<vtkIdType>(n); ++i)
     {
       array_sfc->SetValue(i, static_cast<double>(sfc_partition_labels[i]));
-      // array_p2->SetValue(i, static_cast<double>(p2[i]));
-      // array_p3->SetValue(i, static_cast<double>(p3[i]));
+      array_amracut->SetValue(i, static_cast<double>(amracut_partition_labels[i]));
     }
 
     polyData->GetCellData()->AddArray(array_sfc);
-    // polyData->GetCellData()->AddArray(array_p2);
-    // polyData->GetCellData()->AddArray(array_p3);
+    polyData->GetCellData()->AddArray(array_amracut);
 
     auto writer = vtkSmartPointer<vtkXMLPolyDataWriter>::New();
     writer->SetFileName((output_filename + ".vtp").c_str());

@@ -1,5 +1,5 @@
-#ifndef AMRACUT_TESTBENCH_UTIL_H
-#define AMRACUT_TESTBENCH_UTIL_H
+#ifndef AMRACUT_TESTBENCH_UTILS_H
+#define AMRACUT_TESTBENCH_UTILS_H
 
 #include <iostream>
 #include <sstream>

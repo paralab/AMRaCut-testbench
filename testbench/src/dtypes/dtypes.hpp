@@ -6,6 +6,12 @@
 
 #include "usort/dtypes.h"
 
+
+#define DIST_GRAPH_UNWEIGHTED           0
+#define DIST_GRAPH_VTX_WEIGHTED         1
+#define DIST_GRAPH_EDGE_WEIGHTED        2
+#define DIST_GRAPH_VTX_EDGE_WEIGHTED    3
+
 namespace amracut_testbench
 {
   enum ElementType { TET=4, HEX=5 };

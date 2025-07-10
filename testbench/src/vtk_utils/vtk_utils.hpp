@@ -1,3 +1,6 @@
+#ifndef AMRACUT_TESTBENCH_VTK_UTIS_H
+#define AMRACUT_TESTBENCH_VTK_UTIS_H
+
 #include <vector>
 #include <string>
 #include <cinttypes>
@@ -11,7 +14,9 @@ namespace amracut_testbench
   void export_parititions_to_vtk(
       const std::vector<amracut_testbench::Element> &elements,
       const std::vector<uint64_t> &sfc_partition_labels,
-      // const std::vector<uint64_t> &p2,
-      // const std::vector<uint64_t> &p3,
+      const std::vector<uint64_t> &amracut_partition_labels,
       const std::string output_filename);
 }
+
+
+#endif
