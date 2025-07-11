@@ -8,7 +8,7 @@ echo "====== Building AMRaCut-Testbench ======"
 
 mkdir -p build
 
-cmake -DENABLE_VTK_FEATURES=ON -DVTK_INSTALL_DIR_PATH=${VTK_INSTALL_DIR_PATH} -S ./testbench -B build
+cmake -DENABLE_VTK_FEATURES=OFF -DVTK_INSTALL_DIR_PATH=${VTK_INSTALL_DIR_PATH} -S ./testbench -B build
 cmake --build build
 
 echo "====== AMRaCut-Testbench build done ======"
