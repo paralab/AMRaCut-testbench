@@ -312,6 +312,8 @@ namespace amracut_testbench
     amracut_ctrl ctrl;
     amracut_setup(&ctrl, vtxdist__.data(), xadj__.data(), adjncy__.data(), NULL, NULL, this->wgt_flag, &(this->comm));
     MPI_Barrier(comm);
+    amracut_partgraph(&ctrl, partitions_labels.data(), use_diffusion, 0);   //warmup
+    MPI_Barrier(comm);
     auto start__ = std::chrono::high_resolution_clock::now();
     amracut_partgraph(&ctrl, partitions_labels.data(), use_diffusion, 0);
     MPI_Barrier(comm);
